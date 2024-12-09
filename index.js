@@ -271,6 +271,19 @@ app.get("/usertickets/:id", async (req, res) => {
   }
 });
 
+app.get('/alltickets', async(req, res)=>{
+  try{
+    const tickets = await ticketModel.find()
+    res.json({
+      message: 'Tickets fetched successfully!',
+      data : tickets
+    })
+  }
+  catch(err){
+    console.log(err)
+  }
+})
+
 port = process.env.PORT
 
 app.listen(port, () => {
