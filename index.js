@@ -272,6 +272,19 @@ app.get("/usertickets/:id", async (req, res) => {
   }
 });
 
+app.get('/alltickets', async(req, res)=>{
+  try{
+    const tickets = await ticketModel.find()
+    res.json({
+      message: 'Tickets fetched successfully!',
+      data : tickets
+    })
+  }
+  catch(err){
+    console.log(err)
+  }
+})
+
 app.patch("/cancel-ticket/:id", async (req, res) => {
   const ticketId = req.params.id;
 
