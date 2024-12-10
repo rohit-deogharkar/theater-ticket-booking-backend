@@ -1,6 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const dotenv = require('dotenv')
+const dotenv = require("dotenv");
 
 const mongooseConnect = require("./mongooseConnection");
 
@@ -12,7 +12,7 @@ const ticketModel = require("./ticketSchema");
 
 const app = express();
 app.use(bodyParser.json());
-dotenv.config()
+dotenv.config();
 
 mongooseConnect();
 const saltRounds = 10;
@@ -225,6 +225,7 @@ app.post("/addticket", async (req, res) => {
       email,
       seats,
       price,
+      status: "Confirmed",
     });
     res.json({
       message: "Ticket created successfully",
@@ -271,7 +272,40 @@ app.get("/usertickets/:id", async (req, res) => {
   }
 });
 
-port = process.env.PORT
+app.patch("/cancel-ticket/:id", async (req, res) => {
+  const ticketId = req.params.id;
+
+  try {
+    const ticket = await ticketModel.findById(ticketId);
+    const movie = await movieModel.findById(ticket.movieId);
+
+    ticket.seats.forEach((element) => {
+      const index = movie.reservedSeats.indexOf(element);
+      movie.reservedSeats.splice(index, 1);
+    });
+
+    const updateSeats = await movieModel.findByIdAndUpdate(ticket.movieId, {
+      reservedSeats: movie.reservedSeats,
+    });
+
+    const updateStatus = await ticketModel.findByIdAndUpdate(ticketId, {
+      status: "Cancelled",
+    });
+
+    res.json({
+      ticketseats: ticket.seats,
+      movieseats: movie.reservedSeats,
+      ticketSatus: updateStatus,
+      message: "Ticket cancelled",
+    });
+  } catch (err) {
+    res.json({
+      message: "Error cancelling ticket",
+    });
+  }
+});
+
+port = process.env.PORT;
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);

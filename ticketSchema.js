@@ -9,7 +9,8 @@ const ticketSchema = new mongoose.Schema({
     price: String,
     seats:{
         type: []
-    }
+    },
+    status: String
 })
 
 module.exports = mongoose.model('tickets', ticketSchema)
