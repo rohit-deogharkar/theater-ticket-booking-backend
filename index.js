@@ -129,10 +129,23 @@ app.delete("/deletemovie/:id", async (req, res) => {
   }
 });
 
+app.get("/search-movie", async (req, res) => {
+  try {
+    console.log(req.body);
+    const name = req.body.title;
+    const result = await movieModel.find({ title: { $regex: name } });
+    res.json(result);
+  } catch (err) {
+    res.json({ message: "some error occured" });
+    console.log(err); 
+  }
+});
+
 app.patch("/update-reserved-seat/:id", async (req, res) => {
   const id = req.params.id;
   const reservedSeats = req.body;
   // console.log(reservedSeats)
+
   try {
     const update = await movieModel.findByIdAndUpdate(id, {
       $set: { reservedSeats },
@@ -210,6 +223,17 @@ app.post("/checkuser", async (req, res) => {
   }
 });
 
+app.get("/getallusers", async (req, res) => {
+  try {
+    const users = await userModel.find();
+    res.json({
+      data: users,
+    });
+  } catch (err) {
+    res.status(400).json(err);
+  }
+});
+
 //tciket routes
 
 app.post("/addticket", async (req, res) => {
@@ -272,18 +296,17 @@ app.get("/usertickets/:id", async (req, res) => {
   }
 });
 
-app.get('/alltickets', async(req, res)=>{
-  try{
-    const tickets = await ticketModel.find()
+app.get("/alltickets", async (req, res) => {
+  try {
+    const tickets = await ticketModel.find();
     res.json({
-      message: 'Tickets fetched successfully!',
-      data : tickets
-    })
+      message: "Tickets fetched successfully!",
+      data: tickets,
+    });
+  } catch (err) {
+    console.log(err);
   }
-  catch(err){
-    console.log(err)
-  }
-})
+});
 
 app.patch("/cancel-ticket/:id", async (req, res) => {
   const ticketId = req.params.id;
@@ -317,6 +340,23 @@ app.patch("/cancel-ticket/:id", async (req, res) => {
     });
   }
 });
+
+app.put("/clearseats/:id", async (req, res) => {
+  try {
+    const update = await movieModel.findByIdAndUpdate(req.params.id, {
+      reservedSeats: req.body,
+    });
+    res.json({
+      data: update,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get('/user-specific-seats/:id', (req, res)=>{
+
+})
 
 port = process.env.PORT;
 
