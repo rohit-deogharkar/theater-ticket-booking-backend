@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const movieModel = require("./movieSchema");
 const userModel = require("./userSchema");
 const ticketModel = require("./ticketSchema");
+const logModel = require("./logSchema");
 
 const app = express();
 app.use(bodyParser.json());
@@ -137,7 +138,7 @@ app.get("/search-movie", async (req, res) => {
     res.json(result);
   } catch (err) {
     res.json({ message: "some error occured" });
-    console.log(err); 
+    console.log(err);
   }
 });
 
@@ -354,9 +355,64 @@ app.put("/clearseats/:id", async (req, res) => {
   }
 });
 
-app.get('/user-specific-seats/:id', (req, res)=>{
+app.post("/addlogs", async (req, res) => {
+  const { userid, email, logInTime, logOutTime } = req.body;
+  console.log(req.body);
+  try {
+    const log = await logModel.create({ userid, email, logInTime, logOutTime: " " });
+    res.json(log);
+  } catch (err) {
+    console.log(err);
+  }
+});
 
-})
+app.put("/updatelogs/:id", async (req, res) => {
+  try {
+    const logid = req.params.id;
+    const { logOutTime } = req.body;
+    console.log(logOutTime);
+    const update = await logModel.findByIdAndUpdate(logid, {
+      logOutTime: logOutTime,
+    });
+    res.json(update);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.put("/update-logs-actions/:id", async (req, res) => {
+  const id = req.params.id;
+  const { action } = req.body;
+  try {
+    const getaction = await logModel.find({ _id: id });
+    getaction[0].actions.push(action);
+    const updateaction = await logModel.findByIdAndUpdate(id, {
+      actions: getaction[0].actions,
+    });
+    res.json(updateaction);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/getalllogs", async (req, res) => {
+  try {
+    const logs = await logModel.find();
+    res.json(logs);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/getspecificlog/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const logs = await logModel.find({ _id: id });
+    res.json(logs[0].actions);
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 port = process.env.PORT;
 
